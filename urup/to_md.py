@@ -32,6 +32,9 @@ def convert(f, output=None):
             clean_block = block.strip('\n')
             print(f"\n~~~py\n{clean_block}\n~~~")
 
-def main():
-    f = open(sys.argv[1], "r").read()
+def main(argv):
+    f = open(argv[1], "r").read()
     convert(f)
+
+def cli():
+    main(sys.argv)
