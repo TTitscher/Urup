@@ -12,11 +12,13 @@ indented comments/docstrings.
 """
 
 import sys
+import argparse
 
-def convert(f, output=None):
+
+def convert(f):
+    f = f.lstrip()
     assert f.startswith('"""')
     f = f.replace("\\bm", "\\boldsymbol")
-
 
     blocks = f.split('\n"""')
     blocks[0] = blocks[0].strip('"""')
@@ -25,16 +27,36 @@ def convert(f, output=None):
     Even blocks are now pure markdown, odd blocks are surrounded by `~~~py` and 
     `~~~` for python syntax highlighting.
     """
+    output = ""
     for i, block in enumerate(blocks):
         if i % 2 == 0:
-            print(block)
+            output += block + "\n"
         else:
-            clean_block = block.strip('\n')
-            print(f"\n~~~py\n{clean_block}\n~~~")
+            clean_block = block.strip("\n")
+            output += f"\n~~~py\n{clean_block}\n~~~\n"
+    return output
 
-def main(argv):
-    f = open(argv[1], "r").read()
-    convert(f)
 
-def cli():
-    main(sys.argv)
+"""
+This is the entrypoint for the CLI script.
+"""
+
+
+def main(argv=sys.argv[1:]):
+    parser = argparse.ArgumentParser(description="Convert commented python code to md.")
+    parser.add_argument("input", type=argparse.FileType("r"), help="input (.py) file")
+    parser.add_argument(
+        "-o", "--output", type=argparse.FileType("w"), help="output (.md) file"
+    )
+
+    args = parser.parse_args(argv)
+    f = args.input.read()
+    output = convert(f)
+
+    if args.output:
+        args.output.write(output)
+    else:
+        print(output)
+
+if __name__ == "__main__":
+    main()
