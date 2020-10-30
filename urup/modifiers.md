@@ -4,7 +4,7 @@ Modifiers
 
 For either convenience or compatibility, you may want to modify the comment
 blocks. For example, when typing LaTeX, I am highly annoyed of typing 
-`\boldysmbol` when there is the short `\boldsymbol`. Unfortunately, that is not a 
+`\boldysmbol` when there is the short `\ bm`. Unfortunately, that is not a 
 default package, so I fix this with a modifier.
 
 ~~~py
@@ -25,8 +25,11 @@ def fix_gitlab_equation(block):
 ~~~py
 def fix_gitlab_inlinemath(block):
     return fix_split(block, "$", prefix="$`", suffix="`$")
+~~~
 
+Helper:
 
+~~~py
 def fix_split(block, pattern, prefix, suffix):
     output = ""
     for i, b in enumerate(block.split(pattern)):
