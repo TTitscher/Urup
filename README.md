@@ -13,6 +13,7 @@ block comment, usually containing a title.
 ~~~py
 import sys
 import argparse
+from .modifiers import *
 ~~~
 
 Entrypoint
@@ -38,6 +39,9 @@ def main(argv=sys.argv[1:]):
         const="None",
         help="prints a pydoit task that can be added to a `dodo.py`, optional: css file",
     )
+    parser.add_argument(
+        "--gitlab", action="store_true", help="adapt LaTeX for Gitlab Markdown"
+    )
 
     args = parser.parse_args(argv)
 
@@ -45,8 +49,14 @@ def main(argv=sys.argv[1:]):
         print(dodo_task(args.input.name, args.doit))
         return
 
+    comment_modifiers = []
+    comment_modifiers.append(fix_boldmath)
+    if args.gitlab:
+        comment_modifiers.append(fix_gitlab_equation)
+        comment_modifiers.append(fix_gitlab_inlinemath)
+
     f = args.input.read()
-    output = convert(f)
+    output = convert(f, comment_modifiers)
 
     if args.output:
         args.output.write(output)
@@ -62,10 +72,9 @@ indented comments/docstrings.
 
 
 ~~~py
-def convert(f):
+def convert(f, comment_modifiers):
     f = f.lstrip()
     assert f.startswith('"""')
-    f = f.replace("\\boldsymbol", "\\boldsymbol")
 
     blocks = f.split('\n"""')
     blocks[0] = blocks[0].strip('"""')
@@ -77,6 +86,8 @@ def convert(f):
     output = ""
     for i, block in enumerate(blocks):
         if i % 2 == 0:
+            for comment_modifier in comment_modifiers:
+                block = comment_modifier(block)
             output += block + "\n"
         else:
             clean_block = block.strip("\n")

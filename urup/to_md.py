@@ -13,6 +13,7 @@ block comment, usually containing a title.
 
 import sys
 import argparse
+from .modifiers import *
 
 """
 Entrypoint
@@ -26,6 +27,7 @@ The main CLI options are
 
 """
 
+
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Convert commented python code to md.")
     parser.add_argument("input", type=argparse.FileType("r"), help="input (.py) file")
@@ -38,6 +40,9 @@ def main(argv=sys.argv[1:]):
         const="None",
         help="prints a pydoit task that can be added to a `dodo.py`, optional: css file",
     )
+    parser.add_argument(
+        "--gitlab", action="store_true", help="adapt LaTeX for Gitlab Markdown"
+    )
 
     args = parser.parse_args(argv)
 
@@ -45,13 +50,20 @@ def main(argv=sys.argv[1:]):
         print(dodo_task(args.input.name, args.doit))
         return
 
+    comment_modifiers = []
+    comment_modifiers.append(fix_boldmath)
+    if args.gitlab:
+        comment_modifiers.append(fix_gitlab_equation)
+        comment_modifiers.append(fix_gitlab_inlinemath)
+
     f = args.input.read()
-    output = convert(f)
+    output = convert(f, comment_modifiers)
 
     if args.output:
         args.output.write(output)
     else:
         print(output)
+
 
 """
 Convert
@@ -62,10 +74,10 @@ indented comments/docstrings.
 
 """
 
-def convert(f):
+
+def convert(f, comment_modifiers):
     f = f.lstrip()
     assert f.startswith('"""')
-    f = f.replace("\\bm", "\\boldsymbol")
 
     blocks = f.split('\n"""')
     blocks[0] = blocks[0].strip('"""')
@@ -77,11 +89,14 @@ def convert(f):
     output = ""
     for i, block in enumerate(blocks):
         if i % 2 == 0:
+            for comment_modifier in comment_modifiers:
+                block = comment_modifier(block)
             output += block + "\n"
         else:
             clean_block = block.strip("\n")
             output += f"\n~~~py\n{clean_block}\n~~~\n"
     return output
+
 
 """
 doit
@@ -92,6 +107,7 @@ the convertion of a python file to markdown. The resulting markdown file can
 be displayed in any browser after converting it via `pandoc`.
 
 """
+
 
 def dodo_task(name, css):
     from pathlib import Path
