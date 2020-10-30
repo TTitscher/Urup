@@ -2,12 +2,12 @@
 Test
 ====
 
-This is just a test file to explore if $\LaTeX$ code is displayed correctly. 
+This is just a test file to explore if $`\LaTeX`$ code is displayed correctly. 
 
 Inline math
 -----------
 
-given variables $a$ and $b$ ...
+given variables $`a`$ and $`b`$ ...
 
 ~~~py
 a = 5.
@@ -19,7 +19,10 @@ b = 7.
 Block math
 ----------
 
-E.g. $$ c = a^b $$
+E.g. 
+~~~math
+c = a^b
+~~~
 
 ~~~py
 c = a**b
