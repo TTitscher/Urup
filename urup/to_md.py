@@ -75,7 +75,7 @@ indented comments/docstrings.
 """
 
 
-def convert(f, comment_modifiers):
+def convert(f, comment_modifiers=""):
     f = f.lstrip()
     assert f.startswith('"""')
 

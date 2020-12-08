@@ -1,6 +1,6 @@
 import unittest
 
-from urup import to_md
+from urup import to_md, modifiers
 
 
 class TestUrup(unittest.TestCase):
@@ -16,7 +16,7 @@ Some maths goes like $\bm \sigma$.
 def add(a, b):
     return a + b'''
 
-        expected = r'''
+        expected = r"""
 Heading
 =======
 
@@ -26,8 +26,8 @@ Some maths goes like $\boldsymbol \sigma$.
 def add(a, b):
     return a + b
 ~~~
-'''
-        self.assertEqual(to_md.convert(code), expected)
+"""
+        self.assertEqual(to_md.convert(code, [modifiers.fix_boldmath]), expected)
 
     def test_start_with_code(self):
         code = r'''
@@ -37,6 +37,7 @@ def add(a, b):
 This was some code.
 """'''
         self.assertRaises(AssertionError, to_md.convert, code)
+
 
 if __name__ == "__main__":
     unittest.main()
